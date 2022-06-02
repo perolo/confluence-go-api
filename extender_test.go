@@ -5,7 +5,7 @@ import (
 )
 
 func Test_TestExtenderAddCategoryResponseType(t *testing.T) {
-	prepareTest(t, TestExtenderAddCategoryResponseType)
+	prepareTest(t, []int{TestExtenderAddCategoryResponseType})
 
 	ok, err2 := testClient.AddSpaceCategory("ds", "test")
 	//	defer CleanupH(resp)
@@ -23,7 +23,7 @@ func Test_TestExtenderAddCategoryResponseType(t *testing.T) {
 }
 
 func Test_ExtenderSpacePermissionTypes(t *testing.T) {
-	prepareTest(t, TestExtenderSpacePermissionTypes)
+	prepareTest(t, []int{TestExtenderSpacePermissionTypes})
 
 	permissionTypes, err2 := testClient.GetPermissionTypes()
 	//	defer CleanupH(resp)
@@ -41,7 +41,7 @@ func Test_ExtenderSpacePermissionTypes(t *testing.T) {
 }
 
 func Test_TestExtenderSpacePermissionTypes(t *testing.T) {
-	prepareTest(t, TestExtenderSpaceUserPermission)
+	prepareTest(t, []int{TestExtenderSpaceUserPermission})
 
 	usersWithAnyPermission, err2 := testClient.GetAllUsersWithAnyPermission("~admin", &PaginationOptions{}) // StartAt: 0, MaxResults: 50
 	//	defer CleanupH(resp)
@@ -59,7 +59,7 @@ func Test_TestExtenderSpacePermissionTypes(t *testing.T) {
 }
 
 func Test_TestExtenderSpaceAnyUserPermission(t *testing.T) {
-	prepareTest(t, TestExtenderSpaceAnyUserPermission)
+	prepareTest(t, []int{TestExtenderSpaceAnyUserPermission})
 
 	userPermissionsForSpace, err2 := testClient.GetUserPermissionsForSpace("~admin", "admin")
 	//	defer CleanupH(resp)
@@ -77,7 +77,7 @@ func Test_TestExtenderSpaceAnyUserPermission(t *testing.T) {
 }
 
 func Test_TestExtenderGetGroups(t *testing.T) {
-	prepareTest(t, TestExtenderGetGroups)
+	prepareTest(t, []int{TestExtenderGetGroups})
 
 	getGroups, err2 := testClient.GetGroups(nil)
 	//	defer CleanupH(resp)
@@ -95,7 +95,7 @@ func Test_TestExtenderGetGroups(t *testing.T) {
 }
 
 func Test_TestExtenderGetUsers(t *testing.T) {
-	prepareTest(t, TestExtenderGetUsers)
+	prepareTest(t, []int{TestExtenderGetUsers})
 
 	getUsers, err2 := testClient.GetUsers("confluence-users", nil)
 	//	defer CleanupH(resp)

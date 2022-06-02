@@ -179,7 +179,6 @@ func (a *API) GetContent(query ContentQuery) (*ContentSearch, error) {
 		return nil, err
 	}
 	ep.RawQuery = addContentQueryParams(query).Encode()
-
 	req, err := http.NewRequest("GET", ep.String(), nil)
 	if err != nil {
 		return nil, err
@@ -519,7 +518,7 @@ func (a *API) UppdateAttachment(spacename string, pagename string, filename stri
 }
 
 // AddPage adds a new page to the space with the given title, TODO what if page already exists?
-func (a *API) AddPage(title, spaceKey, filepath string, bodyOnly, stripImgs bool, ancestor string) {
+func (a *API) AddPage(title, spaceKey, filepath string, bodyOnly, stripImgs bool, ancestor string) error {
 
 	// create content
 	data := &Content{
@@ -546,10 +545,7 @@ func (a *API) AddPage(title, spaceKey, filepath string, bodyOnly, stripImgs bool
 	data.Body.Storage.Value = getBodyFromFile(filepath, bodyOnly, stripImgs)
 
 	_, err := a.CreateContent(data)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	return err
 }
 
 func getBodyFromFile(filepath string, bodyOnly, stripImgs bool) string {

@@ -19,6 +19,7 @@ type ConfluenceTestType struct {
 	Method       string
 	Type         string
 	TypeFile     string
+	UpdateJson   bool
 }
 
 const (
@@ -31,47 +32,50 @@ const (
 	TestExtenderSpaceAnyUserPermission
 	TestExtenderGetGroups
 	TestExtenderGetUsers
+	TestGetPageID
+	TestUppdate1
+	TestUppdate2
 )
 
 var ConfluenceTest = []ConfluenceTestType{
 	{
 		MockEndpoint: "/rest/api/space",
 		APIEndpoint:  "/rest/api/space", File: "mocks/spaces.json",
-		Method: "GET", Type: "AllSpaces", TypeFile: "space-dtos.go",
+		Method: "GET", Type: "AllSpaces", TypeFile: "space-dtos.go", UpdateJson: true,
 	},
 	{
 		MockEndpoint: "/rest/api/space",
 		APIEndpoint:  "/rest/api/space?limit=50&status=current&type=personal",
-		File:         "mocks/get-permissions.json", Method: "GET", Type: "", TypeFile: "",
+		File:         "mocks/get-permissions.json", Method: "GET", Type: "", TypeFile: "", UpdateJson: true,
 	},
 	{
 		MockEndpoint: "/rest/experimental/content/98319/version",
 		APIEndpoint:  "/rest/experimental/content/98319/version", File: "mocks/version.json",
-		Method: "GET", Type: "ContentVersionResult", TypeFile: "version-dtos.go",
+		Method: "GET", Type: "ContentVersionResult", TypeFile: "version-dtos.go", UpdateJson: true,
 	},
 	{
 		MockEndpoint: "/rest/extender/1.0/category/addSpaceCategory/space/ds/category/test",
 		APIEndpoint:  "/rest/extender/1.0/category/addSpaceCategory/space/ds/category/test",
 		File:         "mocks/extender-add.json", Method: "PUT", Type: "AddCategoryResponseType",
-		TypeFile: "extender-dtos.go",
+		TypeFile: "extender-dtos.go", UpdateJson: true,
 	},
 	{
 		MockEndpoint: "/rest/extender/1.0/permission/space/permissionTypes",
 		APIEndpoint:  "/rest/extender/1.0/permission/space/permissionTypes",
 		File:         "mocks/permissions.json", Method: "GET", Type: "PermissionsTypes",
-		TypeFile: "permissions-dtos.go",
+		TypeFile: "permissions-dtos.go", UpdateJson: true,
 	},
 	{
 		MockEndpoint: "/rest/extender/1.0/permission/space/~admin/allUsersWithAnyPermission",
 		APIEndpoint:  "/rest/extender/1.0/permission/space/~admin/allUsersWithAnyPermission?maxResults=50",
 		File:         "mocks/get-users-permissions.json", Method: "GET", Type: "GetAllUsersWithAnyPermissionType",
-		TypeFile: "get-users-permissions-dtos.go",
+		TypeFile: "get-users-permissions-dtos.go", UpdateJson: true,
 	},
 	{
 		MockEndpoint: "/rest/extender/1.0/permission/user/admin/getPermissionsForSpace/space/~admin",
 		APIEndpoint:  "/rest/extender/1.0/permission/user/admin/getPermissionsForSpace/space/~admin",
 		File:         "mocks/get-admin-permissions.json", Method: "GET", Type: "GetPermissionsForSpaceType",
-		TypeFile: "get-admin-permissions-dtos.go",
+		TypeFile: "get-admin-permissions-dtos.go", UpdateJson: true,
 	},
 	{
 		MockEndpoint: "/rest/extender/1.0/group/getGroups",
@@ -79,7 +83,7 @@ var ConfluenceTest = []ConfluenceTestType{
 		File:         "mocks/get-groups.json",
 		Method:       "GET",
 		Type:         "GroupsType",
-		TypeFile:     "get-groups-dtos.go",
+		TypeFile:     "get-groups-dtos.go", UpdateJson: true,
 	},
 	{
 		MockEndpoint: "/rest/extender/1.0/group/getUsers/confluence-users",
@@ -87,7 +91,31 @@ var ConfluenceTest = []ConfluenceTestType{
 		File:         "mocks/get-users.json",
 		Method:       "GET",
 		Type:         "UsersType",
-		TypeFile:     "get-users-dtos.go",
+		TypeFile:     "get-users-dtos.go", UpdateJson: true,
+	},
+	{
+		MockEndpoint: "/rest/api/content/",
+		APIEndpoint:  "/rest/api/content/?limit=10&spaceKey=ds&title=Welcome+to+Confluence",
+		File:         "mocks/get-pageid.json",
+		Method:       "GET",
+		Type:         "",
+		TypeFile:     "", UpdateJson: true,
+	},
+	{
+		MockEndpoint: "/rest/api/content/98319/child/attachment",
+		APIEndpoint:  "/rest/api/content/98319/child/attachment",
+		File:         "mocks/get-attachm.json",
+		Method:       "GET",
+		Type:         "",
+		TypeFile:     "", UpdateJson: true,
+	},
+	{
+		MockEndpoint: "/rest/api/content/98319/child/attachment/98379/data",
+		APIEndpoint:  "/rest/api/content/98319/child/attachment/98379/data",
+		File:         "mocks/put-attachment.json",
+		Method:       "POST",
+		Type:         "",
+		TypeFile:     "", UpdateJson: false,
 	},
 }
 
@@ -100,31 +128,33 @@ func UpdateTests() error {
 	}
 	//Remove all old files
 	for _, ctest := range ConfluenceTest {
-		e := os.Remove(ctest.File)
-		if e != nil {
-			fmt.Printf("Expected? %s\n", e.Error())
-		}
-		e = os.Remove(ctest.TypeFile)
-		if e != nil {
-			fmt.Printf("Expected? %s\n", e.Error())
-		}
-		resp, err2 := confClient.SendGenericRequest(ctest.APIEndpoint, ctest.Method)
-		if err2 != nil {
-			return err2
-		}
-		err3 := ioutil.WriteFile(ctest.File, resp, 0644)
-		if err3 != nil {
-			return err3
-		}
-		if ctest.Type != "" {
-			i := strings.NewReader(string(resp))
-			res, err2 := gojson.Generate(i, gojson.ParseJson, ctest.Type, "goconfluence", []string{"json"}, false, true)
+		if ctest.UpdateJson {
+			e := os.Remove(ctest.File)
+			if e != nil {
+				fmt.Printf("Expected? %s\n", e.Error())
+			}
+			e = os.Remove(ctest.TypeFile)
+			if e != nil {
+				fmt.Printf("Expected? %s\n", e.Error())
+			}
+			resp, err2 := confClient.SendGenericRequest(ctest.APIEndpoint, ctest.Method)
 			if err2 != nil {
 				return err2
 			}
-			err3 = ioutil.WriteFile(ctest.TypeFile, res, 0644)
+			err3 := ioutil.WriteFile(ctest.File, resp, 0644)
 			if err3 != nil {
 				return err3
+			}
+			if ctest.Type != "" {
+				i := strings.NewReader(string(resp))
+				res, err2 := gojson.Generate(i, gojson.ParseJson, ctest.Type, "goconfluence", []string{"json"}, false, true)
+				if err2 != nil {
+					return err2
+				}
+				err3 = ioutil.WriteFile(ctest.TypeFile, res, 0644)
+				if err3 != nil {
+					return err3
+				}
 			}
 		}
 	}

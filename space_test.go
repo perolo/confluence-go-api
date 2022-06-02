@@ -59,7 +59,7 @@ func TestGetAllSpacesQuery(t *testing.T) {
 }
 
 func Test_TestSpaceGetPersonalSpacesSuccess(t *testing.T) {
-	prepareTest(t, TestSpaceGetPersonalSpaces)
+	prepareTest(t, []int{TestSpaceGetPersonalSpaces})
 
 	spaces, err2 := testClient.GetAllSpaces(AllSpacesQuery{Type: "personal"}) //Type: "personal"
 	//	defer CleanupH(resp)
@@ -80,7 +80,7 @@ func Test_TestSpaceGetPersonalSpacesSuccess(t *testing.T) {
 }
 
 func Test_SpaceGetSpacesMocFileSuccess(t *testing.T) {
-	prepareTest(t, TestSpaceGetSpacesMocFileS)
+	prepareTest(t, []int{TestSpaceGetSpacesMocFileS})
 
 	spaces, err2 := testClient.GetAllSpaces(AllSpacesQuery{})
 	//	defer CleanupH(resp)
@@ -120,26 +120,30 @@ func teardown() {
 	//	testServer.Close()
 }
 
-func prepareTest(t *testing.T, index int) {
-
-	testAPIEndpoint := ConfluenceTest[index].MockEndpoint
-
-	raw, err := ioutil.ReadFile(ConfluenceTest[index].File)
-	if err != nil {
-		t.Error(err.Error())
-	}
+func prepareTest(t *testing.T, indexVector []int) {
 
 	setup()
 	defer teardown()
-	testMux.HandleFunc(testAPIEndpoint, func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, ConfluenceTest[index].Method)
-		testRequestURL(t, r, testAPIEndpoint)
+	for _, index := range indexVector {
 
-		_, err = fmt.Fprint(w, string(raw))
+		testAPIEndpoint := ConfluenceTest[index].MockEndpoint
+		testAPIMethod := ConfluenceTest[index].Method
+
+		raw, err := ioutil.ReadFile(ConfluenceTest[index].File)
 		if err != nil {
-			t.Errorf("Error given: %s", err)
+			t.Error(err.Error())
 		}
-	})
+
+		testMux.HandleFunc(testAPIEndpoint, func(w http.ResponseWriter, r *http.Request) {
+			testMethod(t, r, testAPIMethod)
+			testRequestURL(t, r, testAPIEndpoint)
+
+			_, err = fmt.Fprint(w, string(raw))
+			if err != nil {
+				t.Errorf("Error given: %s", err)
+			}
+		})
+	}
 }
 
 func testMethod(t *testing.T, r *http.Request, want string) {

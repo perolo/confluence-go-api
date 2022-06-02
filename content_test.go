@@ -148,11 +148,10 @@ func TestAddContentQueryParams(t *testing.T) {
 	assert.Equal(t, p.Get("type"), "test")
 }
 
-func Test_TestGetVersion(t *testing.T) {
-	prepareTest(t, TestGetVersion)
+func Test_GetVersion(t *testing.T) {
+	prepareTest(t, []int{TestGetVersion})
 
 	res, err2 := testClient.GetContentVersion("98319")
-	//	defer CleanupH(resp)
 	if err2 == nil {
 		if res == nil {
 			t.Error("Expected version - is nil")
@@ -166,12 +165,51 @@ func Test_TestGetVersion(t *testing.T) {
 	}
 }
 
+func Test_GetPageID(t *testing.T) {
+	prepareTest(t, []int{TestGetPageID})
+
+	res, err2 := testClient.GetPageId("ds", "Welcome to Confluence")
+	if err2 == nil {
+		if res == nil {
+			t.Error("Expected ID - is nil")
+		} else {
+			if res.Results[0].ID != "98319" {
+				t.Errorf("Expected ID 98319, received: %v \n", res.Results[0].ID)
+			}
+		}
+	} else {
+		t.Error("Received nil response.")
+	}
+}
+
+func Test_UppdateAttachment(t *testing.T) {
+	prepareTest(t, []int{TestGetPageID, TestUppdate1, TestUppdate2})
+
+	err2 := testClient.UppdateAttachment("ds", "Welcome to Confluence", "C:/Temp/Template.xlsx")
+	if err2 == nil {
+	} else {
+		t.Error("Received nil response.")
+	}
+}
+
+/*
+func Test_AddPage(t *testing.T) {
+	prepareTest(t, TestAddPage)
+
+	err2 := testClient.AddPage("ds", "Some random name", "./mocks/grouppage.html", true, true, "98319")
+	if err2 == nil {
+	} else {
+		t.Error("Received nil response.")
+	}
+}
+*/
+
 /*
 Requires confluence server up and running...
 TODO - mock
 
 Add "t_" for now
-
+*/
 
 func TesLocalhost(t *testing.T) {
 	//a, err := NewAPI("http://localhost:1990/confluence", "admin", "admin")
@@ -187,10 +225,10 @@ func TesLocalhost(t *testing.T) {
 	assert.Nil(t, err2)
 	assert.Equal(t, "98319", res.Results[0].ID)
 
-	err3 := a.UppdateAttachment("ds", "Welcome to Confluence", "C:/Temp/Template.xlsx")
-	assert.Nil(t, err3)
+	err = a.UppdateAttachment("ds", "Welcome to Confluence", "C:/Temp/Template.xlsx")
+	assert.Nil(t, err)
 
-	a.AddPage("Test Added page 2", "ds", "./mocks/grouppage.html", true, true, res.Results[0].ID)
+	err = a.AddPage("Test Added page 4", "ds", "./mocks/grouppage.html", true, true, res.Results[0].ID)
+	assert.Nil(t, err)
 
 }
-*/
