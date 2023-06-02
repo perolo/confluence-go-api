@@ -140,20 +140,35 @@ type GetGroupMembersOptions struct {
 	StartAt    int `json:"startAt"`
 }
 
-/*
-type GroupsType struct {
-	Total      int      `json:"total"`
-	MaxResults int      `json:"maxResults"`
-	Groups     []string `json:"groups"`
-	StartAt    int      `json:"startAt"`
-	Status     string   `json:"status"`
+type Link struct {
+	Self string `json:"self"`
 }
-*/
-//groups, _ := confluence.GetGroups(&gropt)
 
+type GroupType struct {
+	Type  string `json:"type"`
+	Name  string `json:"name"`
+	ID    string `json:"id"`
+	Links Link   `json:"_links"`
+}
+
+type Links2 struct {
+	Base    string `json:"base"`
+	Context string `json:"context"`
+	Self    string `json:"self"`
+}
+
+type GroupsType struct {
+	Groups []GroupType `json:"results"`
+	Start  int         `json:"start"`
+	Limit  int         `json:"limit"`
+	Size   int         `json:"size"`
+	Links  Links2      `json:"_links"`
+}
+
+// https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-group/#api-group-group
 func (a *API) GetGroups(options *GetGroupMembersOptions) (*GroupsType, error) {
 
-	u := a.endPoint.String() + "/rest/extender/1.0/group/getGroups"
+	u := a.endPoint.String() + "rest/api/group"
 
 	endpoint, err := addOptions(u, options)
 	if err != nil {
@@ -169,7 +184,66 @@ func (a *API) GetGroups(options *GetGroupMembersOptions) (*GroupsType, error) {
 	return &groups, nil
 }
 
-func (a *API) GetAllGroupsWithAnyPermission(spacekey string, options *PaginationOptions) (*GetAllGroupsWithAnyPermissionType, error) {
+type ProfilePicture struct {
+	Path      string `json:"path"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	IsDefault bool   `json:"isDefault"`
+}
+type EExpandable struct {
+	Operations    string `json:"operations"`
+	PersonalSpace string `json:"personalSpace"`
+}
+type SSLinks struct {
+	Self string `json:"self"`
+}
+type Member struct {
+	Type                   string         `json:"type"`
+	AccountID              string         `json:"accountId"`
+	AccountType            string         `json:"accountType"`
+	Email                  string         `json:"email"`
+	PublicName             string         `json:"publicName"`
+	ProfilePicture         ProfilePicture `json:"profilePicture"`
+	DisplayName            string         `json:"displayName"`
+	IsExternalCollaborator bool           `json:"isExternalCollaborator"`
+	Expandable             EExpandable    `json:"_expandable"`
+	Links                  SSLinks        `json:"_links"`
+	TimeZone               string         `json:"timeZone,omitempty"`
+}
+type GroupMemberType struct {
+	Members []Member `json:"results"`
+	Start   int      `json:"start"`
+	Limit   int      `json:"limit"`
+	Size    int      `json:"size"`
+	Links   Links2   `json:"_links"`
+}
+
+func (a *API) GetGroupMembers(name string) (*GroupMemberType, error) {
+
+	u := a.endPoint.String() + fmt.Sprintf("rest/api/group/%s/member", name)
+
+	endpoint, err := addOptions(u, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var members GroupMemberType
+
+	err3 := a.DoRequest(endpoint, "GET", &members)
+	if err3 != nil {
+		return nil, err3
+	}
+	return &members, nil
+}
+
+type GetAllGroupsWithAnyPermissionType2 struct {
+	Total      int      `json:"total"`
+	MaxResults int      `json:"maxResults"`
+	Groups     []string `json:"groups"`
+	StartAt    int      `json:"startAt"`
+}
+
+func (a *API) GetAllGroupsWithAnyPermission(spacekey string, options *PaginationOptions) (*GetAllGroupsWithAnyPermissionType2, error) {
 
 	u := a.endPoint.String() + fmt.Sprintf("/rest/extender/1.0/permission/space/%s/allGroupsWithAnyPermission", spacekey)
 	endpoint, err := addOptions(u, options)
@@ -177,7 +251,7 @@ func (a *API) GetAllGroupsWithAnyPermission(spacekey string, options *Pagination
 		return nil, err
 	}
 
-	groups := new(GetAllGroupsWithAnyPermissionType)
+	groups := new(GetAllGroupsWithAnyPermissionType2)
 	err3 := a.DoRequest(endpoint, "GET", &groups)
 	if err3 != nil {
 		return nil, err3
@@ -196,22 +270,4 @@ func (a *API) GetGroupPermissionsForSpace(spacekey, group string) (*GetPermissio
 
 	//defer CleanupH(resp)
 	return permissions, nil
-}
-
-func (a *API) GetUsers(group string, options *GetGroupMembersOptions) (*UsersType, error) {
-
-	u := a.endPoint.String() + fmt.Sprintf("/rest/extender/1.0/group/getUsers/%s", group)
-
-	endpoint, err := addOptions(u, options)
-	if err != nil {
-		return nil, err
-	}
-
-	var users UsersType
-
-	err3 := a.DoRequest(endpoint, "GET", &users)
-	if err3 != nil {
-		return nil, err3
-	}
-	return &users, nil
 }

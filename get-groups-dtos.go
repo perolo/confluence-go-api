@@ -1,6 +1,6 @@
 package goconfluence
 
-type GroupsType struct {
+type GroupsTypeToBeFixed struct {
 	Groups     []string `json:"groups"`
 	MaxResults int64    `json:"maxResults"`
 	StartAt    int64    `json:"startAt"`
