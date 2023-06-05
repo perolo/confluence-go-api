@@ -136,8 +136,8 @@ func (a *API) DoRequest(endpoint string, method string, responseContainer interf
 }
 
 type GetGroupMembersOptions struct {
-	MaxResults int `json:"maxResults"`
-	StartAt    int `json:"startAt"`
+	Limit int `url:"limit"`
+	Start int `url:"start"`
 }
 
 type Link struct {
@@ -218,11 +218,12 @@ type GroupMemberType struct {
 	Links   Links2   `json:"_links"`
 }
 
-func (a *API) GetGroupMembers(name string) (*GroupMemberType, error) {
+// https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-group/#api-wiki-rest-api-group-member-get
+func (a *API) GetGroupMembers(name string, options *GetGroupMembersOptions) (*GroupMemberType, error) {
 
 	u := a.endPoint.String() + fmt.Sprintf("rest/api/group/%s/member", name)
 
-	endpoint, err := addOptions(u, nil)
+	endpoint, err := addOptions(u, options)
 	if err != nil {
 		return nil, err
 	}
