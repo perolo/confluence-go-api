@@ -1,29 +1,17 @@
 package goconfluence
 
 type AllSpaces struct {
-	Links struct {
-		Base    string `json:"base"`
-		Context string `json:"context"`
-		Self    string `json:"self"`
-	} `json:"_links"`
-	Limit   int64 `json:"limit"`
 	Results []struct {
-		Expandable struct {
-			Description     string `json:"description"`
-			Homepage        string `json:"homepage"`
-			Icon            string `json:"icon"`
-			Metadata        string `json:"metadata"`
-			RetentionPolicy string `json:"retentionPolicy"`
-		} `json:"_expandable"`
-		Links struct {
-			Self  string `json:"self"`
-			Webui string `json:"webui"`
-		} `json:"_links"`
-		ID   int64  `json:"id"`
-		Key  string `json:"key"`
-		Name string `json:"name"`
-		Type string `json:"type"`
+		Name        string      `json:"name"`
+		Key         string      `json:"key"`
+		ID          int         `json:"id"`
+		Type        string      `json:"type"`
+		HomepageID  int         `json:"homepageId"`
+		Icon        interface{} `json:"icon"`
+		Status      string      `json:"status"`
+		Description interface{} `json:"description"`
 	} `json:"results"`
-	Size  int64 `json:"size"`
-	Start int64 `json:"start"`
+	Links struct {
+		Next string `json:"next"`
+	} `json:"_links"`
 }

@@ -296,12 +296,12 @@ func (a *API) SendWatcherRequest(ep *url.URL, method string) (*Watchers, error) 
 }
 
 // SendAllSpacesRequest sends a request for all spaces
-func (a *API) SendAllSpacesRequest(ep *url.URL, method string) (*AllSpaces, error) {
+func (a *API) SendAllSpacesRequest(ep string, method string) (*AllSpaces, error) {
 
 	if a.Debug {
-		fmt.Printf("Send: %s, Method: %s \n", ep.String(), method)
+		fmt.Printf("Send: %s, Method: %s \n", ep, method)
 	}
-	req, err := http.NewRequest(method, ep.String(), nil)
+	req, err := http.NewRequest(method, ep, nil)
 	if err != nil {
 		return nil, err
 	}

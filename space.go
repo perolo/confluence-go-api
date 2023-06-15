@@ -1,10 +1,5 @@
 package goconfluence
 
-import (
-	"net/url"
-	"strconv"
-)
-
 // AllSpacesQuery defines the query parameters
 // Query parameter values https://developer.atlassian.com/cloud/confluence/rest/#api-space-get
 type Expandable struct {
@@ -47,30 +42,27 @@ type AllSpacesQuery struct {
 	Links   SLinks  `json:"_links"`
 }
 
-// getSpaceEndpoint creates the correct api endpoint
-func (a *API) getSpaceEndpoint() (*url.URL, error) {
-	return url.ParseRequestURI(a.endPoint.String() + "/rest/api/space")
+type AllSpacesOption struct {
+	Start  int    `url:"start"`
+	Limit  int    `url:"limit"`
+	Type   string `url:"type"`
+	Status string `url:"status"`
 }
 
+// getSpaceEndpoint creates the correct api endpoint
+
 // GetAllSpaces queries content using a query parameters
-func (a *API) GetAllSpaces(query AllSpacesQuery) (*AllSpaces, error) {
-	ep, err := a.getSpaceEndpoint()
+func (a *API) GetAllSpaces(options AllSpacesOption) (*AllSpaces, error) {
+	u := a.endPoint.String() + "api/v2/spaces"
+	// ep.RawQuery = addAllSpacesQueryParams(query).Encode()
+	endpoint, err := addOptions(u, options)
 	if err != nil {
 		return nil, err
 	}
-	ep.RawQuery = addAllSpacesQueryParams(query).Encode()
-	return a.SendAllSpacesRequest(ep, "GET")
+	return a.SendAllSpacesRequest(endpoint, "GET")
 }
 
-// addAllSpacesQueryParams adds the defined query parameters
-func addAllSpacesQueryParams(query AllSpacesQuery) *url.Values {
-
-	data := url.Values{}
-	if query.Limit != 0 {
-		data.Set("limit", strconv.Itoa(query.Limit))
-	}
-	if query.Start != 0 {
-		data.Set("start", strconv.Itoa(query.Start))
-	}
-	return &data
+func (a *API) GetNextSpaces(link string) (*AllSpaces, error) {
+	u := a.endPoint.Scheme + "://" + a.endPoint.Hostname() + link
+	return a.SendAllSpacesRequest(u, "GET")
 }
